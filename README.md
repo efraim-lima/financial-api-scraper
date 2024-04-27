@@ -14,4 +14,16 @@ export FLASK_APP=production
 at least just use
 flask run
 
+
+
+
+
+
+
+
+The redis is used for cache the results of requests.
+
+The initialization is using redis-cli in terminal
+
+The quotes are configured to stay in cahche for 30 seconds, it may be adjusted before.
 """
