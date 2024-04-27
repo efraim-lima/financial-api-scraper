@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<title>{{title}}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<body>
+    <form action="." method="post">
+        <label for="code">Stock code</label>
+        <input type="text" name="code" id="code" placeholder="Enter the stock code">
+        <label for="amount">Amount</label>
+        <input type="text" name="amount" id="amount" placeholder="Enter a purchase amount">
+        <button type="submit">Submit</button>
+    </form>
+    <h1>Last purchases:</h1>
+    <ul>
+        {% for i in purchases %}
+        <li>{{i}}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+</body>
+</html> 
