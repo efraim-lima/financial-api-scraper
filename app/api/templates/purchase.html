@@ -11,10 +11,11 @@
         <input type="text" name="amount" id="amount" placeholder="Enter a purchase amount">
         <button type="submit">Submit</button>
     </form>
-    <h1>Last purchases:</h1>
+    <h2>Purchase done!!</h2>
+    <h4>Last purchases:</h4>
     <ul>
-        {% for i in purchases %}
-        <li>{{i}}</li>
+        {% for purchase in purchases %}
+        <li>{{purchase}}</li>
         {% endfor %}
     </ul>
 </div>

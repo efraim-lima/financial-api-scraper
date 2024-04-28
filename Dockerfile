@@ -19,19 +19,28 @@
 FROM python:3.11.2
 
 # Set the working directory in the container
-WORKDIR /
+WORKDIR /app
 
 # Copy the requirements file into the container
-COPY requirements.txt /
+COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Use the official Redis image from Docker Hub
-FROM redis
+COPY . /app
 
-# Copy a custom Redis configuration file to the container
-COPY redis.conf /usr/local/etc/redis/redis.conf
+# Exporting api_key as environment variable
+ENV POLYGON_API_KEY="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
 
-# Start Redis server with the custom configuration file
-CMD [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+#the port for flask app
+EXPOSE 8000
+
+CMD ["python3", "api/app.py"]
+
+# For run docker compose:
+# $ docker-compose up
+
+# I need do docker login in my machine
+# $ sudo docker login
+# $ sudo docker commit $CONTAINER_ID <username>/<app_name>
+# $ sudo docker push <username>/<app_name>
