@@ -13,7 +13,7 @@ def configure(app):
             title="Stocks"
             )
     
-    @app.route('/purchase')
+    @app.route('/stock/<sring:stock_symbol>')
     def purchase():
         return render_template(
             'index.html',
