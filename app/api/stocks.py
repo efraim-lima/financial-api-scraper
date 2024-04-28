@@ -7,38 +7,33 @@ bp = Blueprint('stocks', __name__, url_prefix='/stocks')
 redis_conn = redis.Redis(host='localhost', port=6379, db=0)
 
 def getStock(ticker):
-    # TODO: Pegar o valor de stock proveniente da API Polygon
     quote = getQuotes(ticker)
-    stk = quote['symbol']
-    if not stk:
-        abort(400, 'Missing "stk" parameter')
+    ticker = quote['symbol']
+    if not ticker:
+        abort(400, 'Missing "ticker" parameter')
+    return ticker, quote
 
 @bp.route('/', methods=['GET','POST'])
 def stocks():
     if request.method == 'GET':
-        # TODO: AINDA PRECISO CAPTURAR O CODIGO DA AÇÃO E PASSAR PARA O REDIS_CONN COMO STK
-        # TODO: AINDA PRECISO PASSAR O CORPO DO JSON E PASSAR PARA O REDIS_CONN COMO VALOR A SER ARMAZENADO NO CACHE
-        if redis_conn.get(code) == None:
-            redis_conn.set(code, JSON, ex=30)
-        return render_template('stocks.html')
+        if redis_conn.get(ticker) == None:
+            ticker2, stock = getStock(ticker)
+            redis_conn.set(ticker, json.dumps(stock), ex=30)
+            return render_template('stocks.html')
     elif request.method == 'POST':
         amount = request.form.get('amount')
-        code = request.form.get('code')
-        if not amount or not code:
+        ticker = request.form.get('ticker')
+        if not amount or not ticker:
             abort(400, 'Invalid amount or code')
-        return render_template('purchase.html')
+        return render_template('purchase.html', ticker=ticker, amount=amount)
 
-
-# TODO: Connect to the purchase request
-@app_route('/stock/<stk>', methods=['GET'])
-def specificStock(stk):
-    code = "code:" + stk
-    if redis_conn.get(code) == None:
-        stock = getStock(stk)
-        redis_conn.set(code, json.dumps(stock), ex=30)
-    return jsonify(json.loads(redis_con.get(code)))
-
-
+@app_route('/stock/<ticker>', methods=['GET'])
+def specificStock(ticker):
+    code = "code:" + ticker
+    if redis_conn.get(ticker) == None:
+        ticker2, stock = getStock(ticker)
+        redis_conn.set(ticker, json.dumps(stock), ex=30)
+    return render_template('stock.html', ticker=ticker)
 
 def configure(app):
     app.register_blueprint(bp)

@@ -4,12 +4,23 @@
 <title>{{title}}</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <body>
-  <h1>Options:</h1>
+  <h1>Stock Market</h1>
+  <h2>Some of our tickers today:</h2>
+  <h3>click any for get more information.</h3>
   <ul>
-    {% for i in options %}
-    <li>{{i}}</li>
+    {% for ticker in tickers%}
+      {% if loop.index <= 10 %}
+      <li><a href="{{ url_for('stocks.specificStock', ticker=ticker) }}">{{ ticker }}</a></li>
+      {% endif %}
     {% endfor %}
   </ul>
+  <br>
+  <h3>Want to see other kind of ticker? Please, insert the ticker</h3> 
+  <form action="." method="post">
+    <label for="ticker">Stock ticker</label>
+    <input type="text" name="ticker" id="ticker" placeholder="Enter the stock ticker">
+    <button type="submit">Submit</button>
+</form>
 </div>
 
 </body>

@@ -34,9 +34,9 @@ else:
 redis_conn = redis.StrictRedis(
     host='localhost', 
     port=6379,
-    decode_responses=True
+    decode_responses=True,
+    db=0
 )
-
 
 def getQuote(ticker):
     response = requests.get(f"https://api.polygon.io/v1/open-close/{ticker}/{day}?apiKey={polygonKey}")
@@ -46,7 +46,7 @@ def getQuote(ticker):
             redis_conn.set(ticker, json.dumps(data), ex=30)
         except Exception as e:
             print(e)
-            
+        redis_conn.setex(ticker, 5*24*60*60, json.dumps(data))
         print(data)
         return data
     else:
@@ -54,6 +54,11 @@ def getQuote(ticker):
         print(response.text)
         return None
 
+def getTickers(ticker):
+    response = requests.get(f"https://api.polygon.io/v1/reference/tickers?market='stocks'&apiKey{day}?apiKey={polygonKey}")
+    if response.status_code == 200:
+        data = response.json()
+        try:
 #second way to get data:
 """
 def getQuote(ticker):

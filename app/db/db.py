@@ -9,24 +9,24 @@ def get_db():
 def configure(app):
     app.db = get_db()
 
-def create_table_if_not_exists(conn):
+def create_purchase(conn):
     cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS purchases (
+    cursor.execute('''CREATE TABLE IF NOT EXISTS purchase (
                         id INTEGER PRIMARY KEY,
-                        stock_code CHAR[6] NOT NULL,
+                        ticker CHAR[6] NOT NULL,
                         amount INTEGER NOT NULL
                     )''')
     conn.commit()
- 
-def check(conn, id, stock):
+
+def check(conn, ticker, table_name):
     cursor = conn.cursor()
-    cursor.execute("SELECT stock_code FROM purchases WHERE id=?", (id))
+    cursor.execute("SELECT * FROM  WHERE ticker=?", (ticker, table_name))
     result = cursor.fetchone()
-    return result is not None
+    return result
  
-def insert(conn, stock_code, amount):
+def insert(conn, ticker, amount):
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO purchases (stock_code, amount) VALUES (?, ?)", (stock_code, amount))
+    cursor.execute("INSERT INTO table_name (ticker, amount) VALUES (?, ?)", (ticker, amount))
     conn.commit()
     print("Added successfully.")
 
