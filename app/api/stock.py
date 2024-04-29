@@ -1,43 +1,55 @@
-from flask import Blueprint, render_template, request, abort, current_app
+# Import from the parent directory (app)
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+from flask import Flask, Blueprint, request, jsonify, abort, make_response
+from app.db import db
 from app.src.client import getQuote
-import redis
+import datetime
 import json
+import redis
+import sqlite3
 
 bp = Blueprint('stocks', __name__, url_prefix='/stock')
 redis_conn = redis.Redis(host='localhost', port=6379, db=0)
 
 def getStock(stock_symbol):
-    quote = getQuote(ticker)
-    symbol = quote['symbol']
-    if not ticker:
-        abort(400, 'Missing "ticker" parameter')
-    return symbol, quote
+    quote = getQuote(stock_symbol)
+    quote = json.dumps(quote)
+    return quote
 
-@bp.route('/stock', methods=['GET','POST'])
-def stocks():
-    if request.method == 'GET':
-        ticker = request.args.get('stock_symbol')
-        if redis_conn.get(ticker) == None:
-            symbol, quote = getStock(stock_symbol)
-            redis_conn.set(symbol, json.dumps(stock), ex=30)
-            return quote, render_template('stock.html')
-    elif request.method == 'POST':
-        amount = request.args.get('amount')
-        stock_symbol = request.args.get('stock_symbol')
-        if not amount or not stock_symbol:
-            abort(400, 'Invalid amount or code')
-        else:
-            # TODO: save the amount, ticker and date in sqlite database that are configured in /app/db/db.py in function purchase()
-            #return render_template('purchase.html', ticker=ticker, amount=amount)
-            return jsonify({'message':f"{amount} of units purchased"})
+@bp.route('/<string:stock_symbol>', methods=['GET'])
+def get_stock(stock_symbol):
+    if redis_conn.get(stock_symbol) is None:
+        quote = getStock(stock_symbol)
+        quote = json.dumps(quote)
+        redis_conn.setex(stock_symbol, 60, quote)
+    return jsonify(json.loads(redis_conn.get(stock_symbol)))
 
-@bp.route('/stock/<string:stock_symbol>', methods=['GET'])
-def specificStock(stock_symbol):
-    if redis_conn.get(stock_symbol) == None:
-        symbol, stock = getStock(stock_symbol)
-        redis_conn.set(symbol, json.dumps(stock), ex=30)
-    return jsonify(stock)
-    #return render_template('stock.html', ticker=ticker)
+@bp.route('/<string:stock_symbol>', methods=['POST'])
+def update_stock(stock_symbol):
+    amount = request.json.get('amount')
+
+    stock_symbol = stock_symbol.upper()
+
+    # Get the current date and time
+    now = datetime.datetime.now()
+    now = now.strftime("%Y-%m-%d %H:%M:%S")
+
+    if not amount:
+        abort(400, 'Invalid amount')
+    
+    conn = db.get_db()
+    cursor = conn.cursor()
+    
+    if db.check(stock_symbol, now) == False:
+        db.insert(stock_symbol, amount, now)
+
+    db.close()
+
+    return make_response(jsonify(f"{amount} stocks of {stock_symbol} purchased!"), 200)
 
 def configure(app):
     app.register_blueprint(bp)
+    return app

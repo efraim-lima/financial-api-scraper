@@ -29,13 +29,18 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app
 
+# Create the SQLite database file
+RUN sqlite3 /app/db/purchases.db < /app/db/schema.sql
+
 # Exporting api_key as environment variable
 ENV POLYGON_API_KEY="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
+ENV FLASK_APP=main:create_app
+ENV FLASK_ENV=development
 
 #the port for flask app
 EXPOSE 8000
 
-CMD ["python3", "api/app.py"]
+CMD ["python3", "app/api/main.py"]
 
 # For run docker compose:
 # $ docker-compose up

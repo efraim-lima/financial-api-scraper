@@ -1,44 +1,46 @@
+import os
 import sqlite3
+import random
+import string
 
 def get_db():
-    # Connect to SQLite database
+    db_file = './app/db/purchases.db'
+    
     global conn
-    conn = sqlite3.connect('stocks.db')
+    conn = sqlite3.connect(db_file)
+    create_purchases(conn)
     return conn
 
 def configure(app):
     app.db = get_db()
 
-def create_purchase(conn):
+def create_purchases(conn):
     cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS purchase (
-                        id INTEGER PRIMARY KEY,
-                        ticker CHAR[6] NOT NULL,
-                        amount INTEGER NOT NULL
+    cursor.execute('''CREATE TABLE IF NOT EXISTS purchases (
+                        id TEXT PRIMARY KEY,
+                        ticker TEXT NOT NULL,
+                        amount INTEGER NOT NULL,
+                        date DATE NOT NULL
                     )''')
     conn.commit()
 
-def check(conn, ticker, table_name):
+def check(ticker, now):
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM  WHERE ticker=?", (ticker, table_name))
+    cursor.execute("SELECT * FROM purchases WHERE ticker=? AND date(date)=?", (ticker, now))
     result = cursor.fetchone()
-    return result
+    return result is not None
  
-def insert(conn, ticker, amount):
+def insert(ticker, amount, now):
+    id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO table_name (ticker, amount) VALUES (?, ?)", (ticker, amount))
+    cursor.execute("""INSERT INTO purchases (
+        id, ticker, amount, date) VALUES (?, ?, ?, ?)""", 
+        (id, ticker, amount, now)
+    )
     conn.commit()
     print("Added successfully.")
+    return
 
-# Create table if it doesn't exist
-create_table_if_not_exists(conn)
-
-# Check for conflicts
-if check_for_conflict(conn, name):
-    print("Error: A user with this name already exists.")
-else:
-    # Insert user if no conflict
-    insert_user(conn, name, address)
-
-# Close connection
-conn.close()
+def close():
+    # Close connection
+    conn.close()

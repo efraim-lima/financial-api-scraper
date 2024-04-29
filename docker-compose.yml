@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  flask:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - POLYGON_API_KEY="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:

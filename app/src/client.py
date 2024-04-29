@@ -12,12 +12,12 @@ import requests
 # $ export POLYGON_API_KEY="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
 
 # Here we get the API_KEY that was saved in the environment variable
-# redis_conn = redis.StrictRedis(
-#     host='localhost', 
-#     port=6379,
-#     decode_responses=True,
-#     db=0
-# )
+redis_conn = redis.StrictRedis(
+    host='localhost', 
+    port=6379,
+    decode_responses=True,
+    db=0
+)
 today = datetime.date.today()
 
 def is_business_day(date):
@@ -41,16 +41,31 @@ else:
     day = last_bd.strftime('%Y-%m-%d')
 
 def getQuote(ticker):
+    poligonKey="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
     response = requests.get(f"https://api.polygon.io/v1/open-close/{ticker}/{day}?apiKey={polygonKey}")
     if response.status_code == 200:
         data = response.json()
+        data = json.dumps(data)
         try:
-            print(data)
-#            redis_conn.set(ticker, json.dumps(data), ex=30)
+            if redis_conn.exists(ticker):
+                # TODO: check the reddis connection and api return
+                # Key exists, so merge the data
+                performance_data = redis_conn.hget(ticker, "performance")
+                if performance_data is not None:
+                    json_data = json.loads(performance_data)
+                    new_data = {**data, **json_data}
+                    redis_conn.hset(ticker, "performance", json.dumps(new_data))
+                else:
+                    # Update the data in the cache
+                    redis_conn.hset(ticker, "performance", json.dumps(data))
+            else:
+                # Key does not exist, so store the data
+                redis_conn.hset(ticker, mapping=data)
+            redis_conn.setex(stock_symbol, 60, quote)
         except Exception as e:
             print(e)
-       # redis_conn.setex(ticker, 5*24*60*60, json.dumps(data))
-        print(data)
+        redis_conn.setex(ticker, 5*24*60*60, data)
+
         return data
     else:
         print(response.status_code)
@@ -62,17 +77,19 @@ def getTickers():
     if response.status_code == 200:
         data = response.json()
         try:
-            print(data)
-          #  redis_conn.set("tickers", json.dumps(data), ex=3000)
+            quote = json.dumps(quote)
+            redis_conn.setex(stock_symbol, 60, quote)
             return data
         except Exception as e:
             print(e)
-      #  redis_conn.setex("tickers", 5*24*60*60, json.dumps(data))
+        redis_conn.setex("tickers", 5*24*60*60, json.dumps(data))
         return data
     else:
         print(response.status_code)
         print(response.text)
         return None
+
+
 #second way to get data:
 """
 def getQuote(ticker):
@@ -82,7 +99,4 @@ def getQuote(ticker):
     print(quote)
     return quote
 """
-
-#For my test
-#getQuote("AAPL")
-getTickers()
+getQuote("AAPL")

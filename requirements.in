@@ -6,7 +6,9 @@
 
 Flask
 holidays
+pip install lxml_html_clean
 polygon-api-client
 redis
-requests
+requests_html
 setuptools
+unittest
