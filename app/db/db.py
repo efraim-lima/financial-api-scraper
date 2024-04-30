@@ -1,13 +1,26 @@
+# Import from the parent directory (app)
+import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 import sqlite3
 import random
 import string
+import contextlib
+
+@contextlib.contextmanager
+def get_db_connection():
+    conn = sqlite3.connect('./app/db/purchases.db', check_same_thread=False)
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 def get_db():
     db_file = './app/db/purchases.db'
     
     global conn
-    conn = sqlite3.connect(db_file)
+    conn = sqlite3.connect(db_file, check_same_thread=False, timeout=10)
     create_purchases(conn)
     return conn
 
@@ -16,30 +29,28 @@ def configure(app):
 
 def create_purchases(conn):
     cursor = conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS purchases (
+    cursor.execute("""CREATE TABLE IF NOT EXISTS history (
                         id TEXT PRIMARY KEY,
                         ticker TEXT NOT NULL,
                         amount INTEGER NOT NULL,
                         date DATE NOT NULL
-                    )''')
+                    );""")
     conn.commit()
 
-def check(ticker, now):
+def check(conn, ticker, now):
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM purchases WHERE ticker=? AND date(date)=?", (ticker, now))
+    cursor.execute("SELECT * FROM history WHERE ticker=? AND date(date)=?;", (ticker, now))
     result = cursor.fetchone()
     return result is not None
  
-def insert(ticker, amount, now):
-    id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-    cursor = conn.cursor()
-    cursor.execute("""INSERT INTO purchases (
-        id, ticker, amount, date) VALUES (?, ?, ?, ?)""", 
-        (id, ticker, amount, now)
-    )
-    conn.commit()
-    print("Added successfully.")
-    return
+def insert(conn, ticker, amount, now):
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        id = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+        cursor.execute("INSERT INTO history (id, ticker, amount, date) VALUES (?, ?, ?, ?);", (id, ticker, amount, now))
+        conn.commit()
+        print("Added successfully.")
+        return
 
 def close():
     # Close connection

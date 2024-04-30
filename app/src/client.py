@@ -1,6 +1,7 @@
 import os
 polygonKey = os.environ.get("POLYGON_API_KEY")
 
+import calendar
 import datetime
 import holidays
 import json
@@ -12,10 +13,9 @@ import requests
 # $ export POLYGON_API_KEY="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
 
 # Here we get the API_KEY that was saved in the environment variable
-redis_conn = redis.StrictRedis(
-    host='localhost', 
+redis_conn = redis.Redis(
+    host='127.0.0.1', 
     port=6379,
-    decode_responses=True,
     db=0
 )
 today = datetime.date.today()
@@ -34,11 +34,21 @@ def last_business_day(date):
         prev_day -= datetime.timedelta(days=1)
     return prev_day
 
+today = datetime.date.today()
+
 if is_business_day(today):
-    day = today.strftime('%Y-%m-%d')
+    if today.weekday() == calendar.MONDAY:
+        last_bd = last_business_day(today)
+        day = last_bd.strftime('%Y-%m-%d')
+        print(f"The last business before Monday was: {day}")
+    else:
+        last_bd = last_business_day(today)
+        day = last_bd.strftime('%Y-%m-%d')
+        print(f"The last business before today was: {day}")
 else:
     last_bd = last_business_day(today)
     day = last_bd.strftime('%Y-%m-%d')
+    print(f"The last business day before today was: {day}")
 
 def getQuote(ticker):
     poligonKey="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
@@ -46,43 +56,24 @@ def getQuote(ticker):
     if response.status_code == 200:
         data = response.json()
         data = json.dumps(data)
-        try:
-            if redis_conn.exists(ticker):
-                # TODO: check the reddis connection and api return
-                # Key exists, so merge the data
-                performance_data = redis_conn.hget(ticker, "performance")
-                if performance_data is not None:
-                    json_data = json.loads(performance_data)
-                    new_data = {**data, **json_data}
-                    redis_conn.hset(ticker, "performance", json.dumps(new_data))
-                else:
-                    # Update the data in the cache
-                    redis_conn.hset(ticker, "performance", json.dumps(data))
-            else:
-                # Key does not exist, so store the data
-                redis_conn.hset(ticker, mapping=data)
-            redis_conn.setex(stock_symbol, 60, quote)
-        except Exception as e:
-            print(e)
-        redis_conn.setex(ticker, 5*24*60*60, data)
-
-        return data
-    else:
-        print(response.status_code)
-        print(response.text)
-        return None
-
-def getTickers():
-    response = requests.get(f"https://api.polygon.io/v3/reference/tickers?active=true&apiKey={polygonKey}")
-    if response.status_code == 200:
         data = response.json()
+
         try:
-            quote = json.dumps(quote)
-            redis_conn.setex(stock_symbol, 60, quote)
-            return data
+            # Check if the key exists in Redis
+            if not redis_conn.exists(ticker) or redis_conn.type(ticker) != 'string':
+                redis_conn.set(ticker, json.dumps(data))
+            else:
+                # Key exists, so update the data
+                existing_data = json.loads(redis_conn.get(ticker))
+                existing_data.update(data)
+                redis_conn.set(ticker, json.dumps(existing_data))
+
+            # Set TTL for the key
+            redis_conn.expire(ticker, 5 * 24 * 60 * 60)
+
         except Exception as e:
             print(e)
-        redis_conn.setex("tickers", 5*24*60*60, json.dumps(data))
+        print(data)
         return data
     else:
         print(response.status_code)
@@ -99,4 +90,3 @@ def getQuote(ticker):
     print(quote)
     return quote
 """
-getQuote("AAPL")

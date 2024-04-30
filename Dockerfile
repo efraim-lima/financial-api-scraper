@@ -18,29 +18,42 @@
 # Use the official Python image as the base image
 FROM python:3.11.2
 
+COPY . /api-container
+WORKDIR /api-container
+
+RUN apt-get update && apt-get install -y sqlite3
+
+RUN apt install -y python3
+RUN apt install -y redis-server
+
+RUN service redis-server start
+
+RUN pip install pip-tools
+RUN pip-compile --upgrade --resolver=backtracking requirements.in
+RUN pip install --upgrade -r requirements.txt
+
 # Set the working directory in the container
-WORKDIR /app
 
 # Copy the requirements file into the container
-COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /app
-
 # Create the SQLite database file
-RUN sqlite3 /app/db/purchases.db < /app/db/schema.sql
+# COPY /app/db/purchases.db /app/db/purchases.db
+RUN touch ./app/db/purchases.db
+RUN sqlite3 ./app/db/purchases.db
 
 # Exporting api_key as environment variable
 ENV POLYGON_API_KEY="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
 ENV FLASK_APP=main:create_app
 ENV FLASK_ENV=development
 
-#the port for flask app
+# #the port for flask app
 EXPOSE 8000
+EXPOSE 6379
 
-CMD ["python3", "app/api/main.py"]
+CMD ["sh", "-c", "python3 ./app/api/main.py && python3 -m flask run --host=0.0.0.0 --port=8000 && redis-server --port 6363"]
 
 # For run docker compose:
 # $ docker-compose up

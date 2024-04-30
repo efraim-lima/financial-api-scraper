@@ -1,4 +1,4 @@
-# Import from the parent directory (app)
+#Import from the parent directory (app)
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -12,44 +12,48 @@ import redis
 import sqlite3
 
 bp = Blueprint('stocks', __name__, url_prefix='/stock')
-redis_conn = redis.Redis(host='localhost', port=6379, db=0)
+redis_conn = redis.Redis(host='127.0.0.1', port=6379, db=0)
 
-def getStock(stock_symbol):
-    quote = getQuote(stock_symbol)
-    quote = json.dumps(quote)
-    return quote
+# def getStock(stock_symbol):
+#     quote = getQuote(stock_symbol)
+#     quote = json.dumps(quote)
+#     return quote
 
-@bp.route('/<string:stock_symbol>', methods=['GET'])
-def get_stock(stock_symbol):
-    if redis_conn.get(stock_symbol) is None:
-        quote = getStock(stock_symbol)
-        quote = json.dumps(quote)
-        redis_conn.setex(stock_symbol, 60, quote)
-    return jsonify(json.loads(redis_conn.get(stock_symbol)))
+# @bp.route('/stock')
+# def hello():
+#     return 'Hello, World!'
 
-@bp.route('/<string:stock_symbol>', methods=['POST'])
-def update_stock(stock_symbol):
-    amount = request.json.get('amount')
+# @bp.route('/<string:stock_symbol>', methods=['GET'])
+# def get_stock(stock_symbol):
+#     if redis_conn.get(stock_symbol) is None:
+#         quote = getStock(stock_symbol)
+#         quote = json.dumps(quote)
+#         redis_conn.setex(stock_symbol, 60, quote)
+#     return jsonify(json.loads(redis_conn.get(stock_symbol)))
 
-    stock_symbol = stock_symbol.upper()
+# @bp.route('/<string:stock_symbol>', methods=['POST'])
+# def update_stock(stock_symbol):
+#     amount = request.json.get('amount')
 
-    # Get the current date and time
-    now = datetime.datetime.now()
-    now = now.strftime("%Y-%m-%d %H:%M:%S")
+#     stock_symbol = stock_symbol.upper()
 
-    if not amount:
-        abort(400, 'Invalid amount')
+#     # Get the current date and time
+#     now = datetime.datetime.now()
+#     now = now.strftime("%Y-%m-%d %H:%M:%S")
+
+#     if not amount:
+#         abort(400, 'Invalid amount')
     
-    conn = db.get_db()
-    cursor = conn.cursor()
+#     conn = db.get_db()
+#     cursor = conn.cursor()
     
-    if db.check(stock_symbol, now) == False:
-        db.insert(stock_symbol, amount, now)
+#     if db.check(conn, stock_symbol, now) == False:
+#         db.insert(conn, stock_symbol, amount, now)
 
-    db.close()
+#     db.close()
 
-    return make_response(jsonify(f"{amount} stocks of {stock_symbol} purchased!"), 200)
+#     return make_response(jsonify(f"{amount} stocks of {stock_symbol} purchased!"), 200)
 
-def configure(app):
-    app.register_blueprint(bp)
-    return app
+# def configure(app):
+#     app.register_blueprint(bp)
+#     return app
