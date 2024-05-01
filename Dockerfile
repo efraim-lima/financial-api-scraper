@@ -29,15 +29,15 @@ RUN apt install -y redis-server
 RUN service redis-server start
 
 RUN pip install pip-tools
-RUN pip-compile --upgrade --resolver=backtracking requirements.in
-RUN pip install --upgrade -r requirements.txt
+#RUN pip-compile --upgrade --resolver=backtracking requirements.in
+RUN pip install -r requirements.txt
 
 # Set the working directory in the container
 
 # Copy the requirements file into the container
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Create the SQLite database file
 # COPY /app/db/purchases.db /app/db/purchases.db
@@ -45,7 +45,7 @@ RUN touch ./app/db/purchases.db
 RUN sqlite3 ./app/db/purchases.db
 
 # Exporting api_key as environment variable
-ENV POLYGON_API_KEY="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
+# ENV POLYGON_API_KEY="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
 ENV FLASK_APP=main:create_app
 ENV FLASK_ENV=development
 
@@ -53,7 +53,7 @@ ENV FLASK_ENV=development
 EXPOSE 8000
 EXPOSE 6379
 
-CMD ["sh", "-c", "python3 ./app/api/main.py && python3 -m flask run --host=0.0.0.0 --port=8000 && redis-server --port 6363"]
+CMD ["sh", "-c", "python3 ./app/api/main.py"]
 
 # For run docker compose:
 # $ docker-compose up

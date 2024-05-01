@@ -1,18 +1,18 @@
-#Import from the parent directory (app)
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+# #Import from the parent directory (app)
+# import sys
+# import os
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from flask import Flask, Blueprint, request, jsonify, abort, make_response
-from app.db import db
-from app.src.client import getQuote
-import datetime
-import json
-import redis
-import sqlite3
+# from flask import Flask, Blueprint, request, jsonify, abort, make_response
+# from app.db import db
+# from app.src.client import getQuote
+# import datetime
+# import json
+# import redis
+# import sqlite3
 
-bp = Blueprint('stocks', __name__, url_prefix='/stock')
-redis_conn = redis.Redis(host='127.0.0.1', port=6379, db=0)
+# bp = Blueprint('stocks', __name__, url_prefix='/stock')
+# redis_conn = redis.Redis(host='0.0.0.0', port=8000, password=os.environ.get('REDIS_PASSWORD'), db=0)
 
 # def getStock(stock_symbol):
 #     quote = getQuote(stock_symbol)

@@ -1,33 +1,25 @@
 version: "3.8"
 services:
+    
   redis:
-    image: redis:alpine
+    build: .
+    image: redis:latest
     container_name: redis
     restart: always
     ports:
-      - "6379:6379"
-    environment:
-      - REDIS_URL=redis://redis:6379/1
-    # volumes:
-    #   - ./redis.conf:/usr/local/etc/redis/redis.conf
-    
+      - "6380:6380"
+    command: redis-server --port 6380
+    #command: redis-server --port 8000 --daemonize no
+    volumes:
+      - $PWD/redis-data:/var/lib/redis
+      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
 
-  # redis-slave:
-  #   image: redis:latest
-  #   container_name: redis-slave
-  #   restart: always
-  #   ports:
-  #     - 6479:6379
-  #   command: redis-server --slaveof redis-master 6379
-  flask:
-    build: .
-    ports:
-      - "5000:5000"
     environment:
-      - POLYGON_API_KEY="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
-      - SQL_HOST=sqlite
-    depends_on:
-      - redis
+      - REDIS_REPLICATION_MODE=master
+      - REDIS_URL=redis://redis:8000/1
+    networks:
+      backend:
+        ipv4_address: 172.18.0.10
 
   app:
     build: .
@@ -35,14 +27,38 @@ services:
     restart: always
     ports:
       - "8000:8000"
+    command: |
+      python3 ./app/api/main.py
+      sqlite3 ./app/db/purchases.db
+    volumes:
+      - ${SQLITE_DB_PATH}:/app/db/database.db
     environment:
       - APP=/app/api/main.py
-    command: python3 ./app/api/main.py
+      - SQLITE_DB_PATH=${SQLITE_DB_PATH}
     depends_on:
       - redis
+    networks:
+      backend:
+        ipv4_address: 172.18.0.20
+    links:
+     - redis
+
 volumes:
-  redis-master:
-  # redis-slave:
-# networks:
-#   app-network:
-#     driver: bridge
+  app:
+  redis:
+
+networks:
+  backend:
+    name: backend
+    driver: bridge
+    external: false
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.0.0/16
+          # gateway: 0.0.0.254
+    #       ip_range: 0.0.0.0/24
+    #       aux_addresses:
+    #         host1: 0.0.0.5
+    #         host2: 0.0.0.6
+    #         host3: 0.0.0.7

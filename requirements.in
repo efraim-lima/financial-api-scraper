@@ -13,6 +13,7 @@ holidays
 numpy
 pip-tools
 polygon-api-client
+python-dotenv
 redis
 requests
 requests_html

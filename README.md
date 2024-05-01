@@ -28,6 +28,11 @@ If want to see redis activity in real time, use:
 $redis-cli monitor
 
 for start the project in the dockerfile just run in root 
+$sudo service redis-server stop
+$docker network create backend
+$docker-compose up -d --build
+
+
 $docker build -t flask .
 $docker images
 $docker run -d -p 8000:8000 flask
@@ -44,7 +49,6 @@ $docker run -it --name {container name} -p 8000:8000 {image name}
 $docker compose up --d
 $docker compose down
 $docker-compose build
-$docker-compose up
 
 For to get data from redis endpoints just run in terminal:
 

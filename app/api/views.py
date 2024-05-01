@@ -7,12 +7,20 @@ from flask import Flask, jsonify, render_template
 from app.db import db
 from app.src.client import getQuote
 import datetime
+from dotenv import load_dotenv
 import json
 import redis
 import sqlite3
 
+load_dotenv()
+
 app = Flask(__name__)
-redis_conn = redis.Redis(host='127.0.0.1', port=6379, db=0)
+redis_conn = redis.Redis(
+    host='172.18.0.10', 
+    port=6380,
+    socket_timeout=5,
+    password=os.getenv('REDIS_PASSWORD'),
+    )
 
 def getStock(stock_symbol):
     quote = getQuote(stock_symbol)
@@ -32,10 +40,13 @@ def configure(app):
 
     @app.route('/stock/<string:stock_symbol>', methods=['GET'])
     def get_stock(stock_symbol):
-        if redis_conn.get(stock_symbol) is None:
-            quote = getStock(stock_symbol)
-            quote = json.dumps(quote)
-            redis_conn.setex(stock_symbol, 60, quote)
+        try:
+            if redis_conn.get(stock_symbol) is None:
+                quote = getStock(stock_symbol)
+                quote = json.dumps(quote)
+                redis_conn.setex(stock_symbol, 60, quote)
+        except (requests.exceptions.RequestException, redis.exceptions.RedisError) as e:
+            print(f"Error: {e}")
         return jsonify(json.loads(redis_conn.get(stock_symbol)))
 
     @app.route('/stock/<string:stock_symbol>', methods=['POST'])

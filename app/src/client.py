@@ -3,19 +3,24 @@ polygonKey = os.environ.get("POLYGON_API_KEY")
 
 import calendar
 import datetime
+from dotenv import load_dotenv
 import holidays
 import json
 from polygon import RESTClient
 import redis
 import requests
 
+load_dotenv()
+
 #maybe in some cases we need to export environment variables
 # $ export POLYGON_API_KEY="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
 
 # Here we get the API_KEY that was saved in the environment variable
 redis_conn = redis.Redis(
-    host='127.0.0.1', 
-    port=6379,
+    host='172.18.0.10', 
+    port=6380,
+    socket_timeout=5,
+    #password=os.getenv('REDIS_PASSWORD'),
     db=0
 )
 today = datetime.date.today()
@@ -51,7 +56,7 @@ else:
     print(f"The last business day before today was: {day}")
 
 def getQuote(ticker):
-    poligonKey="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
+    polygonKey=os.getenv('OBFUSCATE')
     response = requests.get(f"https://api.polygon.io/v1/open-close/{ticker}/{day}?apiKey={polygonKey}")
     if response.status_code == 200:
         data = response.json()
@@ -73,6 +78,8 @@ def getQuote(ticker):
 
         except Exception as e:
             print(e)
+        except (requests.exceptions.RequestException, redis.exceptions.RedisError) as e:
+            print(f"Error: {e}")
         print(data)
         return data
     else:
