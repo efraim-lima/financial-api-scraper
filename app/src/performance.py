@@ -21,8 +21,8 @@ def scrape(ticker):
         
         ticker_l = ticker.lower()
         # Connect to the website and get the HTML content
-        
-        client = ZenRowsClient("344b66f368df70a8ae86dd4f39914f024b39835c")
+        zenRowKey=os.getenv('OBFUSCATEII')
+        client = ZenRowsClient(zenRowKey)
         url = f"https://www.marketwatch.com/investing/stock/{ticker_l}"
         params = {"js_render":"true","json_response":"true","premium_proxy":"true"}
         response = client.get(url, params=params)
@@ -46,7 +46,6 @@ def scrape(ticker):
         json_data = json.dumps(data)
 
         # Check if the key exists in Redis
-
         if redis_conn.exists(ticker):
             # Key exists, get the cached data
             performance_data = redis_conn.get(ticker)

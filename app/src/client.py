@@ -12,10 +12,6 @@ import requests
 
 load_dotenv()
 
-#maybe in some cases we need to export environment variables
-# $ export POLYGON_API_KEY="mqJl50msy2bOXpEVFjgNeYpCbsu0zo3f"
-
-# Here we get the API_KEY that was saved in the environment variable
 redis_conn = redis.Redis(
     host='172.18.0.10', 
     port=6380,

@@ -9,9 +9,7 @@ services:
     ports:
       - "6380:6380"
     command: redis-server --port 6380 --requirepass ${REDIS_PASSWORD} --
-    #command: redis-server --port 8000 --daemonize no
     volumes:
-      # - $PWD/redis-data:/redis
       - $PWD/redis.conf:/redis.conf
 
     environment:
@@ -59,9 +57,3 @@ networks:
       driver: default
       config:
         - subnet: 172.18.0.0/16
-          # gateway: 0.0.0.254
-    #       ip_range: 0.0.0.0/24
-    #       aux_addresses:
-    #         host1: 0.0.0.5
-    #         host2: 0.0.0.6
-    #         host3: 0.0.0.7
