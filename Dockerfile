@@ -18,8 +18,8 @@
 # Use the official Python image as the base image
 FROM python:3.11.2
 
-COPY . /api-container
-WORKDIR /api-container
+COPY . /
+WORKDIR /
 
 RUN apt-get update && apt-get install -y sqlite3
 
@@ -38,6 +38,8 @@ RUN pip install -r requirements.txt
 
 # Install Python dependencies
 RUN pip install -r requirements.txt
+
+COPY redis.conf /
 
 # Create the SQLite database file
 # COPY /app/db/purchases.db /app/db/purchases.db
