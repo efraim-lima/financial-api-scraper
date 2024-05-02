@@ -6,6 +6,7 @@
 
 appdirs
 beautifulsoup4
+celery
 bs4
 build
 Flask

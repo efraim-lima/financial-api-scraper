@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y sqlite3
 
 RUN apt install -y python3
 RUN apt install -y redis-server
-
+RUN apt install -y sqlite3
 RUN service redis-server start
 
 RUN pip install pip-tools

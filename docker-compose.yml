@@ -11,7 +11,6 @@ services:
     command: redis-server --port 6380 --requirepass ${REDIS_PASSWORD} --
     volumes:
       - $PWD/redis.conf:/redis.conf
-
     environment:
       - REDIS_REPLICATION_MODE=master
       - REDIS_URL=redis://redis:6380/1
@@ -32,6 +31,7 @@ services:
       python3 ./app/api/main.py
       sqlite3 ./app/db/purchases.db
     volumes:
+      - sqlite_data:/app/sqlite_database
       - ${SQLITE_DB_PATH}:/app/db/database.db
     environment:
       - APP=/app/api/main.py
@@ -44,9 +44,19 @@ services:
     links:
      - redis
 
+  celery:
+    build: .
+    container_name: celery
+    restart: always
+    command: celery -A ./app/src/tasks worker --loglevel=info
+    depends_on:
+      - redis
+      - app
+
 volumes:
   app:
   redis:
+  sqlite_data:
 
 networks:
   backend:

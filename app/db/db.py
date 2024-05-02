@@ -52,6 +52,13 @@ def insert(conn, ticker, amount, now):
         print("Added successfully.")
         return
 
+def get_amount_sum(conn, stock_symbol):
+    cursor = conn.cursor()
+    cursor.execute("SELECT SUM(amount) FROM history WHERE ticker=?;", (stock_symbol))
+    result = cursor.fetchone()
+    cursor.close()
+    return result[0] if result else 0
+
 def close():
     # Close connection
     conn.close()

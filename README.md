@@ -1,59 +1,50 @@
-# API-test
-A simple API that get data from stocks and use it as data for requests and user interaction.
+# Flask API Application with Scraper Integration
 
-"""
-in start we need export 0 environment variables
-$export FLASK_APP=main:create_app
+This Flask API application is designed to provide users with stock data and the ability to "buy" stocks via API requests. Additionally, it incorporates a scraper to gather additional data from external sources for stock modeling purposes.
 
-and if we are in development environment:
-$export FLASK_APP=development
+## Functionality 🛠️
 
-or if we are in production environment:
-$export FLASK_APP=production
+### a. Data Collection and Storage 📊
 
-at least just use
-$flask run
+- Stock data is collected from APIs and stored in cache as JSON format.
+- The scraper correlates stock tickers and retrieves data from another website, saving the data in cache and correlating it with stock symbols.
 
-or
-$python3 <path/to/main.py> 
+### b. Stock Purchase 💰
 
+- Users can make stock purchases via POST requests to `/stock/<stock_symbol>`.
+- Purchases are saved in an SQLite database for storage and further processing.
 
-The redis is used for cache the results of requests.
+### c. Stock Information Retrieval 📈
 
-The initialization is using redis-cli in terminal
+- Users can retrieve stock information via GET requests to `/stock/<stock_symbol>`.
+- Retrieved data is stored in a Redis cache for a short duration.
+- The scraper enhances the stock data with performance data and appends it to the ticker JSON data. If the ticker doesn't exist, it creates a new entry.
 
-The quotes are configured to stay in cahche for 30 seconds, it may be adjusted before.
+### d. Frontend Interface 🖥️
 
-If want to see redis activity in real time, use:
-$redis-cli monitor
+- Users can access more information and select suggested stocks via the `stocks.html` frontend page.
+- All processes are performed in the frontend with API connections.
 
-for start the project in the dockerfile just run in root 
-$sudo service redis-server stop
-$docker network create backend
-$docker-compose up -d --build
+### e. Deployment 🚀
 
+- The application can be easily deployed using Docker Compose by running `docker-compose up -d` in the root directory.
+- Requests can be made via browser client or CLI. For CLI usage, the following commands can be used:
 
-$docker build -t flask .
-$docker images
-$docker run -d -p 8000:8000 flask
-$docker stop $(docker ps -aq)
+    ```bash
+    curl -X GET http://localhost:8000/stock/<stock_symbol>
+    
+    curl -X POST -H "Content-Type: application/json" -d '{"amount": <integer>}' http://localhost:8000/stock/<stock_symbol>
+    ```
 
-$docker ps -a
-$docker-compose rm --stop --force
-$docker compose up -d --build
-$docker run -it -d --name 151dca9a122d api-test_app bash
+## Security Measures 🔒
 
-$docker-compose exec webcont python3 <modulo> <comando>
-$docker build -t {image name} .
-$docker run -it --name {container name} -p 8000:8000 {image name}
-$docker compose up --d
-$docker compose down
-$docker-compose build
+- The code includes input and output sanitization to prevent code and SQL injection. Output escaping logic can be added for enhanced protection.
 
-For to get data from redis endpoints just run in terminal:
+## Notes 📝
 
-curl -X GET http://localhost:8000/stock/<stock_symbol>
-curl -X POST -H "Content-Type: application/json" -d '{"amount": <integer>}' http://localhost:8000/stock/<stock_symbol>
+- While the code performs better in CLI mode, efforts are underway to develop a frontend solution.
+- For any inquiries or assistance, feel free to contact Efraim Lima at efraim.alima@gmail.com or connect via [LinkedIn](https://linkedin.com/in/efraimlima).
 
+## Feedback and Contributions 🙌
 
-"""
+Your feedback and contributions to this project are highly appreciated. If you have any suggestions or want to contribute, please reach out to Efraim Lima.

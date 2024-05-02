@@ -13,12 +13,13 @@ import requests
 load_dotenv()
 
 redis_conn = redis.Redis(
-    host='172.18.0.10', 
+    host='localhost', 
     port=6380,
     socket_timeout=5,
     #password=os.getenv('REDIS_PASSWORD'),
     db=0
 )
+
 today = datetime.date.today()
 
 def is_business_day(date):
@@ -55,13 +56,13 @@ def getQuote(ticker):
     polygonKey=os.getenv('OBFUSCATE')
     response = requests.get(f"https://api.polygon.io/v1/open-close/{ticker}/{day}?apiKey={polygonKey}")
     if response.status_code == 200:
-        data = response.json()
-        data = json.dumps(data)
+        # data = response.json()
+        # data = json.dumps(data)
         data = response.json()
 
         try:
             # Check if the key exists in Redis
-            if not redis_conn.exists(ticker) or redis_conn.type(ticker) != 'string':
+            if not redis_conn.exists(ticker) or redis_conn.type(ticker) != ticker:
                 redis_conn.set(ticker, json.dumps(data))
             else:
                 # Key exists, so update the data
