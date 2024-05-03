@@ -10,11 +10,8 @@ RUN apt install -y redis-server
 RUN apt install -y sqlite3
 RUN service redis-server start
 
-RUN pip install pip-tools
+#RUN pip install pip-tools
 #RUN pip-compile --upgrade --resolver=backtracking requirements.in
-RUN pip install -r requirements.txt
-
-# Install Python dependencies
 RUN pip install -r requirements.txt
 
 COPY redis.conf /

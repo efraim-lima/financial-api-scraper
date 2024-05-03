@@ -6,11 +6,13 @@
 
 appdirs
 beautifulsoup4
+bleach
 celery
 bs4
 build
 Flask
 holidays
+lxml
 numpy
 pip-tools
 polygon-api-client
@@ -20,3 +22,4 @@ requests
 requests_html
 setuptools
 urllib3
+zenrows

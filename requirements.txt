@@ -6,8 +6,11 @@
 #
 async-timeout==4.0.3
     # via redis
+bleach
 blinker==1.7.0
     # via flask
+bs4==0.0.2
+    # via -r requirements.in
 certifi==2024.2.2
     # via
     #   polygon-api-client
@@ -22,17 +25,19 @@ flask==3.0.3
 idna==3.7
     # via requests
 itsdangerous==2.2.0
-holidays
-    # via flask
+holidays==0.47
+    # via -r requirements.txt
 jinja2==3.1.3
     # via flask
+lxml
 markupsafe==2.1.5
     # via
     #   jinja2
     #   werkzeug
 polygon-api-client==1.13.6
     # via -r requirements.in
-python-dotenv
+python-dotenv==1.0.1
+    # via -r requirements.in
 redis==5.0.4
     # via -r requirements.in
 requests==2.31.0
@@ -45,6 +50,7 @@ websockets==12.0
     # via polygon-api-client
 werkzeug==3.0.2
     # via flask
+zenrows
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

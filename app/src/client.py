@@ -7,18 +7,9 @@ from dotenv import load_dotenv
 import holidays
 import json
 from polygon import RESTClient
-import redis
 import requests
 
 load_dotenv()
-
-redis_conn = redis.Redis(
-    host='localhost', 
-    port=6380,
-    socket_timeout=5,
-    #password=os.getenv('REDIS_PASSWORD'),
-    db=0
-)
 
 today = datetime.date.today()
 
@@ -59,38 +50,10 @@ def getQuote(ticker):
         # data = response.json()
         # data = json.dumps(data)
         data = response.json()
-
-        try:
-            # Check if the key exists in Redis
-            if not redis_conn.exists(ticker) or redis_conn.type(ticker) != ticker:
-                redis_conn.set(ticker, json.dumps(data))
-            else:
-                # Key exists, so update the data
-                existing_data = json.loads(redis_conn.get(ticker))
-                existing_data.update(data)
-                redis_conn.set(ticker, json.dumps(existing_data))
-
-            # Set TTL for the key
-            redis_conn.expire(ticker, 5 * 24 * 60 * 60)
-
-        except Exception as e:
-            print(e)
-        except (requests.exceptions.RequestException, redis.exceptions.RedisError) as e:
-            print(f"Error: {e}")
-        print(data)
+        print(f"\nQuote result\n\n{data}")
+        print(type(data))
         return data
     else:
         print(response.status_code)
         print(response.text)
         return None
-
-
-#second way to get data:
-"""
-def getQuote(ticker):
-    client = RESTClient(api_key=polygonKey)
-    quote = client.get_daily_open_close_agg(ticker, day)
-    redis_conn.set(ticker, json.dumps(quote), ex=30)
-    print(quote)
-    return quote
-"""

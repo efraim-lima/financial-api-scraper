@@ -3,10 +3,17 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
+import bleach
 import sqlite3
 import random
+import re
 import string
 import contextlib
+
+def validation(input_string):
+    pattern = r'^[a-zA-Z0-9]+$'
+    return bool(re.match(pattern, input_string))
+
 
 @contextlib.contextmanager
 def get_db_connection():
@@ -38,20 +45,46 @@ def create_purchases(conn):
     conn.commit()
 
 def check(conn, ticker, now):
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM history WHERE ticker=? AND date(date)=?;", (ticker, now))
-    result = cursor.fetchone()
-    return result is not None
+    if validation(ticker) == True:
+        ticker = bleach.clean(ticker)
+        now = bleach.clean(now)
+        cursor = conn.cursor()
+        cursor.execute("""SELECT * FROM 
+        history 
+        WHERE 
+        ticker=%(ticker)s AND date(date)=%(now)s;""", {
+            'ticker': ticker,
+            'now': now
+        })
+        result = cursor.fetchone()
+        return result
+    else: 
+        return "Error"
  
 def insert(conn, ticker, amount, now):
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        id = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
-        cursor.execute("INSERT INTO history (id, ticker, amount, date) VALUES (?, ?, ?, ?);", (id, ticker, amount, now))
-        conn.commit()
-        print("Added successfully.")
-        return
-
+    if validation(ticker) and validation(amount) == True:
+        ticker = bleach.clean(ticker)
+        amount = bleach.clean(amount)
+        now = bleach.clean(now)
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            id = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
+            cursor.execute("""INSERT INTO history (id, ticker, amount, date) VALUES (
+                %(id)s, 
+                %(ticker)s, 
+                %(amount)s, 
+                %(date)s
+                );""",{
+                    'id': id,
+                    'ticker': ticker,
+                    'amount': amount,
+                    'date': now
+                })
+            conn.commit()
+            print("Added successfully.")
+            return
+    else:
+        return "Error"
 def get_amount_sum(conn, stock_symbol):
     cursor = conn.cursor()
     cursor.execute("SELECT SUM(amount) FROM history WHERE ticker=?;", (stock_symbol))
