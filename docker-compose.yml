@@ -60,10 +60,8 @@ services:
       - "8000:8000"
     command: |
       python3 ./app/api/main.py
-      sqlite3 ./app/db/purchases.db
     volumes:
-      - sqlite_data:/app/sqlite_database
-      - ${SQLITE_DB_PATH}:/app/db/database.db
+      - ./app/db/purchases.db:/app/db/purchases.db
     environment:
       - APP=/app/api/main.py
       - SQLITE_DB_PATH=${SQLITE_DB_PATH}

@@ -1,114 +1,102 @@
 # Flask API Application with Scraper Integration
 
-This Flask API application is designed to provide users with stock data and the ability to "buy" stocks via API requests. Additionally, it incorporates a scraper to gather additional data from external sources for stock modeling purposes.
+Hey there! Welcome to this README, where I'll walk you through our Flask API application with scraper integration. It's designed not only provide stock data but allows you to "buy" stocks via API requests.
 
-Main libs Used
+## Main Libraries Used
 
-bleach 💧
+Here are some of the main libraries I used in project:
 
-    HTML Sanitization: A library that helps remove malicious HTML tags and attributes from a given HTML document.
+- **bleach 💧**: Helps keep the SQL clean and free from any malicious injections, sanityzing it.
+- **celery 🕒**: Powers task queue, ensuring asynchronous task execution for better scalability.
+- **flask 🏠**: The web framework for build the API
+- **logging 🛠️**: Keeps track of user activities, generating alerts and info as needed.
+- **polygon-api-client 📊**: Provides access to financial data from Polygon.
+- **redis 💻**: Used for cache management and messaging queue.
+- **requests 📊**: Used for fetching data from web (APIs and Pages).
+- **requests_html 📊**: Enables HTML parsing and web scraping for data extraction.
+- **zenrows 📊**: An incredible tool for bypass scraping problems.
 
-celery 🕒
+## Additional Libraries
 
-    Task Queue: A distributed task queue that allows you to run tasks asynchronously, making your application more scalable and efficient.
-
-
-
-Flask 🏠
-
-    Web Framework: A lightweight web framework for Python that allows you to build web applications quickly and efficiently.
-
-
-polygon-api-client 📊
-
-    Financial Data: A Python library that provides access to financial data from Polygon, allowing you to fetch and analyze financial data.
-
-
-redis 💻
-
-    In-Memory Data Store: An in-memory data store that allows you to store and retrieve data quickly and efficiently.
-
-requests 📊
-
-    HTTP Requests: A library that allows you to send HTTP requests and interact with web servers, making it easy to fetch data from APIs.
-
-Other libs used in this project:
-appdirs 📁
-beautifulsoup4 📊
-build 🛠️
-bs4 📊
-holidays 📆
-lxml 📊
-numpy 📊
-pip-tools 📦
-requests_html 📊
-
-    HTML Parsing: A library that allows you to parse HTML and interact with web pages, making it easy to scrape data from web pages.
-
-zenrows 📊
-
-    Data Analysis: A library that provides tools for data analysis, making it easy to work with and manipulate data.
-
-python-dotenv 📁
-setuptools 🛠️
-urllib3 📊
+I also used other helpful libraries like appdirs, beautifulsoup4, holidays, and numpy, among others.
 
 ## Functionality 🛠️
 
-### a. Data Collection and Storage 📊
+### Data Collection and Storage 📊
 
-- Stock data is collected from APIs and stored in cache as JSON format.
-- The scraper correlates stock tickers and retrieves data from another website, saving the data in cache and correlating it with stock symbols.
+This tool collect stock data from APIs and store it in cache as JSON format. Ater this, the scraper correlates stock tickers and fetch additional data from external sources.
 
-### b. Stock Purchase 💰
+### Stock Purchase 💰
 
-- Users can make stock purchases via POST requests to `/stock/<stock_symbol>`.
-- Purchases are saved in an SQLite database for storage and further processing.
+Users can easily make stock purchases through simple POST requests to `/stock/<stock_symbol>`. These purchases are then stored in an SQLite database for further processing.
 
-### c. Stock Information Retrieval 📈
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"amount": <integer>}' http://localhost:8000/stock/<stock_symbol>
+```
 
-- Users can retrieve stock information via GET requests to `/stock/<stock_symbol>`.
-- Retrieved data is stored in a Redis cache for a short duration.
-- The scraper enhances the stock data with performance data and appends it to the ticker JSON data. If the ticker doesn't exist, it creates a new entry.
+After sending a POST request, you can access the database by following these steps:
 
-### d. Frontend Interface 🖥️
+- First, get the Docker container ID from app-test_app in docker ps:
 
-- Users can access more information and select suggested stocks via the `stocks.html` frontend page.
-- All processes are performed in the frontend with API connections.
+```bash
+docker ps
+```
 
-### e. Deployment 🚀
+- Insert it into the command below to access the container shell:
 
-- The application can be easily deployed using Docker Compose by running `docker-compose up -d` in the /root directory.
+```bash
+docker exec -it <container_id> /bin/bash
+```
 
-    ```bash
-    docker-compose up -d
-    ```
-- I, particularly preffer run these commands:
+- Finally, retrieve the database:
 
-    ```bash
-    docker-compose down
+```bash
+sqlite3 app/db/purchases.db
 
-    echo "y" | docker system prune -f && exit
-    
-    docker-composea up --build
-     ```
-- Requests can be made via browser client or CLI. For CLI usage, the following commands can be used:
+select * from history
+```
 
-    ```bash
-    curl -X GET http://localhost:8000/stock/<stock_symbol>
-    
-    curl -X POST -H "Content-Type: application/json" -d '{"amount": <integer>}' http://localhost:8000/stock/<stock_symbol>
-    ```
+### Stock Information Retrieval 📈
 
-## Security Measures 🔒
+Users can retrieve stock information via GET requests to `/stock/<stock_symbol>`. The retrieved data is stored temporarily in a Redis cache and scraper get performance metrics, appending it to the ticker JSON response.
 
-- The code includes input and output sanitization to prevent code and SQL injection. Output escaping logic can be added for enhanced protection.
+```bash
+curl -X GET http://localhost:8000/stock/<stock_symbol>
+```
 
-## Notes 📝
+### Frontend Interface 🖥️
 
-- While the code performs better in CLI mode, efforts are underway to develop a frontend solution.
-- For any inquiries or assistance, feel free to contact Efraim Lima at efraim.alima@gmail.com or connect via [LinkedIn](https://linkedin.com/in/efraimlima).
+I am currently working on a frontend interface (`stocks.html`) where users can access more information and select suggested stocks. All processes are integrated with API connections.
 
-## Feedback and Contributions 🙌
+### Deployment 🚀
 
-Your feedback and contributions to this project are highly appreciated. If you have any suggestions or want to contribute, please reach out to Efraim Lima.
+Deploying our application is easy! Just fire up Docker Compose with `docker-compose up -d` in the `/root` directory. 
+
+```bash
+docker-compose up -d
+```
+
+Personally, I prefer running these commands:
+
+```bash
+
+docker-compose down
+
+echo "y" | docker system prune -f && exit
+
+docker-compose up --build
+```
+
+### Security Measures 🔒
+
+Security is my goal! My code includes input and output sanitization to prevent any potential code or SQL injection attacks. I'm also considering adding output escaping logic for additional protection.
+
+### Notes 📝
+
+While the code don't performs admirably in CLI mode, I am actively working on developing a user-friendly frontend solution. Stay tuned for updates!
+
+### Feedback and Contributions 🙌
+
+Your feedback and contribution mean too much for me! If you have any suggestions or want to contribute, don't hesitate to reach out to me (Efraim Lima). You can contact me via email at efraim.alima@gmail.com or connect on [LinkedIn](https://linkedin.com/in/efraimlima).
+
+Thanks a lot for the opportunity!
