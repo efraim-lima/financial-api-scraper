@@ -26,6 +26,7 @@ redis_conn = redis.Redis(
 @app.task
 def stock(stock_symbol):
     if redis_conn.exists(stock_symbol):
+        json_data = redis_conn.get(stock_symbol)
         json_data = json.loads(json_data)
         
         print(f"\n\n\n CACHEEEEEEEE \n\n\n")
@@ -45,6 +46,7 @@ def stock(stock_symbol):
 def scraper(stock_symbol):
     if redis_conn.exists(stock_symbol):   
         print("\n\n\n JSON DATA OK \n\n\n") 
+        json_data = redis_conn.get(stock_symbol)
         json_data = json.loads(json_data)
         if 'performance' in json_data:
             print("\n\n\n\n CACHEEEEEEEEE22222222")
@@ -54,8 +56,8 @@ def scraper(stock_symbol):
             # # Set TTL for the key if it doesn't already have one
             # if redis_conn.pttl(stock_symbol) == -1:
             #     redis_conn.expire(stock_symbol, 5 * 24 * 60 * 60)
-            print(f"\nscraper result\n\n{result}")
-            print(type(result))
+            print(f"\nscraper result\n\n{json_data}")
+            print(type(json_data))
             return json.dumps(json_data)
         else:
             result = performance.scrape(stock_symbol, json_data)

@@ -3,7 +3,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, make_response
 from app.db import db
 from app.src.tasks import stock, scraper, validate
 import datetime
@@ -52,27 +52,21 @@ def configure(app):
 
     @app.route('/stock/<string:stock_symbol>', methods=['POST'])
     def purchase(stock_symbol):
-        amount = request.json.get('amount')
-
-        stock_symbol = stock_symbol.upper()
-
-        # Get the current date and time
-        now = datetime.datetime.now()
-        now = now.strftime("%Y-%m-%d %H:%M:%S")
-
+        amount = str(request.json.get('amount'))
         if not amount:
             abort(400, 'Invalid amount')
-        
-        conn = db.get_db()
-        cursor = conn.cursor()
-        db.insert(conn, stock_symbol, amount, now)
+        else:
+            now = datetime.datetime.now()
+            now = now.strftime("%Y-%m-%d %H:%M:%S")
+            stock_symbol = stock_symbol.upper()
+            conn = db.get_db_connection()
+            db.insert(stock_symbol, amount, now)
 
-        if db.check(conn, stock_symbol, now) == True:
-            # Get the sum of all amounts for the given stock symbol
-            amount_sum = db.get_amount_sum(conn, stock_symbol)
+            if db.check(stock_symbol, now) == True:
+                # Get the sum of all amounts for the given stock symbol
+                amount_sum = db.get_amount_sum(stock_symbol)
 
             phrase = f"{amount} units of stock {stock_symbol} were added to your stock record"
-            return make_response(jsonify(phrase), 201)
-        
-        db.close()
+            db.close()
+            return make_response(jsonify(phrase), 201)            
 

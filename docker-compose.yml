@@ -17,7 +17,6 @@ services:
     command: redis-server --port 6380 --requirepass ${REDIS_PASSWORD} --
     volumes:
       - $PWD/redis.conf:/redis.conf
-      - ./data:/data
     environment:
       - REDIS_REPLICATION_MODE=master
       - REDIS_URL=redis://redis:6380/0
