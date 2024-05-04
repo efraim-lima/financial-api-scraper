@@ -25,41 +25,41 @@ redis_conn = redis.Redis(
 
 @app.task
 def stock(stock_symbol):
-    json_data = redis_conn.get(stock_symbol)
-    if json_data:
+    if redis_conn.exists(stock_symbol):
         json_data = json.loads(json_data)
         
         print(f"\n\n\n CACHEEEEEEEE \n\n\n")
+        return json_data
     else:
         json_data = client.getQuote(stock_symbol)
         redis_conn.set(stock_symbol, json.dumps(json_data))
         print(f"\n\n\n NÃO CACHE \n\n\n")
-    # Set TTL for the key
-    redis_conn.expire(stock_symbol, 5 * 24 * 60 * 60)
-    print(f"\nstock result\n\n{json_data}\n")
-    print(type(json_data))
-    results = json.dumps(json_data)
-    return results
+        # Set TTL for the key
+        redis_conn.expire(stock_symbol, 5 * 24 * 60 * 60)
+        print(f"\nstock result\n\n{json_data}\n")
+        print(type(json_data))
+        results = json.dumps(json_data)
+        return results
 
 @app.task
 def scraper(stock_symbol):
-    json_data = redis_conn.get(stock_symbol)
-
-    if json_data:   
+    if redis_conn.exists(stock_symbol):   
         print("\n\n\n JSON DATA OK \n\n\n") 
         json_data = json.loads(json_data)
         if 'performance' in json_data:
+            print("\n\n\n\n CACHEEEEEEEEE22222222")
             # Save the updated data back to Redis
             redis_conn.set(stock_symbol, json.dumps(json_data))
 
-            # Set TTL for the key if it doesn't already have one
-            if redis_conn.pttl(stock_symbol) == -1:
-                redis_conn.expire(stock_symbol, 5 * 24 * 60 * 60)
+            # # Set TTL for the key if it doesn't already have one
+            # if redis_conn.pttl(stock_symbol) == -1:
+            #     redis_conn.expire(stock_symbol, 5 * 24 * 60 * 60)
             print(f"\nscraper result\n\n{result}")
             print(type(result))
             return json.dumps(json_data)
         else:
             result = performance.scrape(stock_symbol, json_data)
+            redis_conn.set(stock_symbol, json.dumps(result))
             print(f"\nscraper result\n\n{result}")
             print(type(result))
             return json.dumps(result)
